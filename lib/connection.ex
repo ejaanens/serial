@@ -14,7 +14,7 @@ defmodule Serial.Connection do
   @broadcastIP  {192, 168, 2, 255}
   @ownIP        {192, 168, 2, 144}
 
-  @type usb_serial :: "ttyUSB" <> ("0" | "1" | "2" | "3")
+  @type usb_serial :: "ttyUSB" <> <<_::_*8>>
 
   @spec start_link(usb_serial) :: :ignore | {:error, any} | {:ok, pid}
   def start_link(serial_port_name) do
@@ -22,51 +22,53 @@ defmodule Serial.Connection do
   end
 
   @impl true
-  # @spec init(String) :: {:ok, {pid, port | {:"$inet", atom, any}}}
-  @spec init(usb_serial) :: {:ok, {pid, port | {:"$inet", atom, any}}}
+  # @spec init(String) :: {:ok, {uart, port | {:"$inet", atom, any}}}
+  @spec init(usb_serial) :: {:ok, {uart, port | {:"$inet", atom, any}}}
   def init(serial_port_name) do
     "ttyUSB"<>port_digit = serial_port_name
-    {:ok, pid} = UART.start_link
+    {:ok, uart} = UART.start_link
     port = @baseport + String.to_integer(port_digit)
     {:ok, socket} = :gen_udp.open(port)
-    UART.open(pid, serial_port_name,
+    UART.open(uart, serial_port_name,
       speed: 9600,
       active: true,
       framing: {UART.Framing.Line, separator: "\r\n"},
       rx_framing_timeout: 500,
       id: :pid)
-    {:ok, {pid, socket, port}}
+    {:ok, {uart, socket, port}}
   end
 
-  # def terminate do
-
-  # end
   @impl true
-  def handle_info({:circuits_uart, pid, {:error, error}}, {pid, socket, port}) do
+  def terminate({uart, socket, port}) do
+    UART.close()
+  end
+
+  @impl true
+  def handle_info({:circuits_uart, uart, {:error, error}}, {uart, socket, port}) do
     # terminate connection
     Logger.error(error)
-    {:noreply, {pid, socket, port}}
+    {:noreply, {uart, socket, port}}
   end
 
-  def handle_info({:circuits_uart, pid, packet}, {pid, socket, port}) do
+  def handle_info({:circuits_uart, uart, packet}, {uart, socket, port}) do
     :gen_udp.send(socket, @broadcastIP, port, packet)
-    {:noreply, {pid, socket, port}}
+    {:noreply, {uart, socket, port}}
   end
 
-  def handle_info {:udp, _proc, @ownIP, _port, _msg}, {pid, socket, port} do
-    {:noreply, {pid, socket, port}}
+  def handle_info {:udp, _proc, @ownIP, _port, _msg}, {uart, socket, port} do
+    {:noreply, {uart, socket, port}}
   end
 
-  def handle_info {:udp, _proc, _ip, port, msg}, {pid, socket, port} do
+  def handle_info {:udp, _proc, _ip, port, msg}, {uart, socket, port} do
     "CONFIG " <> config = msg
     if config do
       Poison.decode!(config)
-      UART.configure(pid, config)
+      UART.configure(uart, config)
     else
-      UART.write(pid, msg)
+      UART.write(uart, msg)
     end
-    # UART.configure(pid, msg)
-    {:noreply, {pid, socket, port}}
+    # UART.configure(uart, msg)
+    {:noreply, {uart, socket, port}}
   end
 
 
