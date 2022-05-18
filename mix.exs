@@ -68,8 +68,8 @@ defmodule Serial.MixProject do
       # Erlang distribution is not started automatically.
       # See https://hexdocs.pm/nerves_pack/readme.html#erlang-distribution
       cookie: "#{@app}_cookie",
-      # include_erts: &Nerves.Release.erts/0,
-      # steps: [&Nerves.Release.init/1, :assemble],
+      include_erts: &Nerves.Release.erts/0,
+      steps: [&Nerves.Release.init/1, :assemble],
       strip_beams: Mix.env() == :prod or [keep: ["Docs"]]
     ]
   end
