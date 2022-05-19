@@ -5,12 +5,25 @@ defmodule Host do
 
   use GenServer
 
-  def start_link state do
-    GenServer.start_link __MODULE__, state, name: __MODULE__
+  def start_link {ip, port} do
+    GenServer.start_link __MODULE__, {ip, port}, name: __MODULE__
   end
 
-  def init state do
+  def init {ip, port} do
 
-    {:ok, state}
+    {:ok, {ip, port}}
+  end
+
+  def handle_info {:udp, _prc, ip, port, msg}, {ip, port} do
+    IO.puts msg
+    {:noreply, {ip, port}}
+  end
+
+  def loop do
+    receive do
+      {:udp, _prc, {192, 168, 2, 144}, 5000, msg} -> IO.puts msg
+    end
+    :timer.sleep 100
+    loop()
   end
 end

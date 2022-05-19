@@ -25,6 +25,7 @@ config :nerves, source_date_epoch: "1652565507"
 # configuring ring_logger.
 
 config :logger, backends: [RingLogger]
+config :logger, RingLogger, max_size: 1024
 
 if Mix.target() == :host or Mix.target() == :"" do
   import_config "host.exs"

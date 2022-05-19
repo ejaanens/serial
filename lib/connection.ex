@@ -11,7 +11,7 @@ defmodule Serial.Connection do
 
   # @ports "ttyUSB"
   @baseport 5000
-  @broadcastIP  {192, 168, 2, 255}
+  @broadcastIP  {192, 168, 2, 236}
   @ownIP        {192, 168, 2, 144}
 
   # @type usb_serial :: <<_::48, _::_*8>>
@@ -42,7 +42,7 @@ defmodule Serial.Connection do
 
   @impl true
   def handle_info {:circuits_uart, usb, {:error, error}}, {usb, socket, port} do
-    # terminate connection
+    # TODO terminate connection?
     Logger.error(error)
     {:noreply, {usb, socket, port}}
   end
@@ -56,9 +56,12 @@ defmodule Serial.Connection do
     {:noreply, {usb, socket, port}}
   end
 
-  def handle_info {:udp, _prc, _ip, port, "CONF "<>msg}, {usb, socket, port} do
-    config = Poison.decode!(msg)
-    UART.configure(usb, config)
+  def handle_info {:udp, _prc, _ip, port, "CONF "<>json}, {usb, socket, port} do
+    config = json
+      |> Poison.decode(as: %Serial.Config{})
+      |> Map.to_list
+      |> Enum.filter(fn {atom, val} -> val != nil and atom != :__struct__ end)
+     UART.configure(usb, config) |> Logger.debug
     {:noreply, {usb, socket, port}}
   end
 

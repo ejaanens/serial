@@ -32,7 +32,7 @@ defmodule Serial.Detect do
     serial_port = serial_ports |> Map.keys |> Enum.at(0)
     if serial_port != nil do
       Connection.start_link(serial_port)
-      {:noreply, detected_ports ++ serial_port}
+      {:noreply, [serial_port | detected_ports]}
     else
       {:noreply, detected_ports}
     end
