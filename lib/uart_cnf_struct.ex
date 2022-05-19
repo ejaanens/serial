@@ -1,4 +1,4 @@
-defmodule Serial.Config do
+defmodule Serial.UART.Settings do
    @derive [Poison.Encoder]
    defstruct [
     :active,

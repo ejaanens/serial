@@ -52,16 +52,16 @@ defmodule Serial.Connection do
     {:noreply, {usb, socket, port}}
   end
 
-  def handle_info {:udp, _prc, @ownIP, _port, _msg}, {usb, socket, port} do
-    {:noreply, {usb, socket, port}}
+  def handle_info {:udp, _prc, @ownIP, _port, _msg}, con do
+    {:noreply, con}
   end
 
-  def handle_info {:udp, _prc, _ip, port, "CONF "<>json}, {usb, socket, port} do
+  def handle_info {:udp, _prc, _ip, port, 'CONF ' ++ json}, {usb, socket, port} do
     config = json
-      |> Poison.decode(as: %Serial.Config{})
+      |> Poison.decode!(as: %Serial.UART.Settings{})
       |> Map.to_list
       |> Enum.filter(fn {atom, val} -> val != nil and atom != :__struct__ end)
-     UART.configure(usb, config) |> Logger.debug
+     UART.configure(usb, config)
     {:noreply, {usb, socket, port}}
   end
 

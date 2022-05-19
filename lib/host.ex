@@ -1,6 +1,6 @@
 defmodule Host do
   @moduledoc """
-  Description of module.
+  Simple UDP to print module.
   """
 
   use GenServer
