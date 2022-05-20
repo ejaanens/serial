@@ -35,7 +35,8 @@ defmodule Serial.Application do
       # Children for all targets except host
       # Starts a worker by calling: Serial.Worker.start_link(arg)
       # {Serial.Worker, arg},
-      {Serial.Detect, ["ttyAMA0", "ttyS0"]} # ignored Serial UART
+      {Serial.Detect, ["ttyAMA0", "ttyS0"]}, # ignored Serial UART
+      {DynamicSupervisor, name: Serial.Connection.Supervisor, strategy: :one_for_one}
       # {Serial.Connection, "ttyUSB0"}
     ]
   end

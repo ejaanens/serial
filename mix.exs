@@ -2,7 +2,7 @@ defmodule Serial.MixProject do
   use Mix.Project
 
   @app :serial
-  @version "0.3.2"
+  @version "0.4.1"
   @all_targets [:rpi, :rpi0, :rpi2, :rpi3, :rpi3a, :rpi4, :bbb, :osd32mp1, :x86_64]
 
   def project do

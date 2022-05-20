@@ -11,23 +11,28 @@ defmodule Serial.Connection do
 
   # @ports "ttyUSB"
   @baseport 5000
-  @broadcastIP  {192, 168, 2, 236}
+  @broadcastIP  {192, 168, 2, 255}
   @ownIP        {192, 168, 2, 144}
 
   # @type usb_serial :: <<_::48, _::_*8>>
 
   @spec start_link(<<_::48, _::_*8>>) :: :ignore | {:error, any} | {:ok, pid}
   def start_link(serial_port_name) do
-    GenServer.start_link __MODULE__, serial_port_name, name: __MODULE__
+    GenServer.start_link(
+      __MODULE__,
+      serial_port_name,
+      name: {:global, "#{serial_port_name}"}
+      )
   end
 
   @impl true
   @spec init(<<_::48, _::_*8>>) :: {:ok, {pid, port | {:"$inet", atom, any}, char}}
   def init(serial_port_name) do
+    Logger.info "started #{serial_port_name}"
     "ttyUSB"<>port_digit = serial_port_name
     {:ok, usb} = UART.start_link
     port = @baseport + String.to_integer(port_digit)
-    {:ok, socket} = :gen_udp.open(port)
+    {:ok, socket} = :gen_udp.open(port, broadcast: true)
     UART.open(usb, serial_port_name,
       framing: {UART.Framing.Line, separator: "\r\n"},
       id: :pid)
@@ -57,15 +62,17 @@ defmodule Serial.Connection do
   end
 
   def handle_info {:udp, _prc, _ip, port, 'CONF ' ++ json}, {usb, socket, port} do
+    Logger.info json
     config = json
       |> Poison.decode!(as: %Serial.UART.Settings{})
       |> Map.to_list
       |> Enum.filter(fn {atom, val} -> val != nil and atom != :__struct__ end)
-     UART.configure(usb, config)
+    UART.configure(usb, config) |> Logger.info
     {:noreply, {usb, socket, port}}
   end
 
   def handle_info {:udp, _prc, _ip, port, msg}, {usb, socket, port} do
+    Logger.info msg
     UART.write(usb, msg)
     {:noreply, {usb, socket, port}}
   end
