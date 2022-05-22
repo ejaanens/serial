@@ -1,6 +1,9 @@
 # Serial
 
-**TODO: Add description**
+                                             / Connection 0
+             / Connection.DynamicSupervisor <- Connection 1
+Supervisor <                                 \ Connection 2
+             \ Detect
 
 ## Targets
 

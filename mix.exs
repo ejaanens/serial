@@ -2,7 +2,7 @@ defmodule Serial.MixProject do
   use Mix.Project
 
   @app :serial
-  @version "0.4.1"
+  @version "0.4.2"
   @all_targets [:rpi, :rpi0, :rpi2, :rpi3, :rpi3a, :rpi4, :bbb, :osd32mp1, :x86_64]
 
   def project do
@@ -11,7 +11,7 @@ defmodule Serial.MixProject do
       version: @version,
       elixir: "~> 1.9",
       archives: [nerves_bootstrap: "~> 1.10"],
-      start_permanent: Mix.env() == :dev,
+      start_permanent: Mix.env() == :test,
       build_embedded: true,
       deps: deps(),
       releases: [{@app, release()}],
@@ -36,6 +36,9 @@ defmodule Serial.MixProject do
       {:ring_logger, "~> 0.8.3"},
       {:toolshed, "~> 0.2.13"},
       {:poison, "~> 5.0"},
+
+      # Dependensies for only :host
+      {:propcheck, "~> 1.4", only: [:test, :dev], targets: :host},
 
       # Dependencies for all targets except :host
       {:nerves_runtime, "~> 0.11.6", targets: @all_targets},

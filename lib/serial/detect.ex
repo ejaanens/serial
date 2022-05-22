@@ -8,7 +8,6 @@ defmodule Serial.Detect do
   require Logger
 
   alias Circuits.UART
-  alias Serial.Connection
 
   @spec start_link(list(String)) :: :ignore | {:error, any} | {:ok, pid}
   def start_link detected_ports do
@@ -32,9 +31,7 @@ defmodule Serial.Detect do
     serial_ports = UART.enumerate |> Map.drop(detected_ports)
     serial_port = serial_ports |> Map.keys |> Enum.at(0)
     if serial_port != nil do
-      # spec = %{id: Connection, start: {Connection, :start_link, serial_port}}
-      spec = {Connection, serial_port}
-      {:ok, _pid} = DynamicSupervisor.start_child(Connection.Supervisor, spec)
+      Serial.Connection.Supervisor.add_usb(serial_port)
       Logger.info "started #{serial_port}"
       {:noreply, [serial_port | detected_ports]}
     else

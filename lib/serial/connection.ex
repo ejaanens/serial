@@ -35,6 +35,7 @@ defmodule Serial.Connection do
     {:ok, socket} = :gen_udp.open(port, broadcast: true)
     UART.open(usb, serial_port_name,
       framing: {UART.Framing.Line, separator: "\r\n"},
+      speed: 57600,
       id: :pid)
     {:ok, {usb, socket, port}}
   end

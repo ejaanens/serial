@@ -17,18 +17,18 @@ defmodule Host do
   def handle_info {:udp, _prc, ip, port, '$GPGGA,' ++ msg}, {ip, port} do
     <<
       utc::bytes-size(10), ",",
-      lat::bytes-size(9), ",", n_s::bytes-size(1), ",",
+      lat::bytes-size(9),  ",", n_s::bytes-size(1), ",",
       lon::bytes-size(10), ",", e_w::bytes-size(1), ",",
       _fix::bytes-size(1), ",",
-      sat::bytes-size(2), ",",
+      sat::bytes-size(2),  ",",
       hdop::bytes-size(4), ",", var::bytes
-    >> = msg
+    >> = to_string msg
 
     <<
-      alt::bytes-size(4), ",", alt_u::bytes-size(1), ",",
+      alt::bytes-size(5), ",", alt_u::bytes-size(1), ",",
       _geo_sep::bytes-size(4), ",", _geo_sep_u::bytes-size(1), ",",
-      _dif_cor_age::bytes-size(4), ",",
-      _sum::bytes-size(4), "*", _chk::binary>> = var
+      _dif_cor_age::bytes-size(0), ",",
+      _sum::bytes-size(0), "*", _chk::binary>> = var
 
     <<hh::bytes-size(2), mm::bytes-size(2), ss::bytes-size(2), ".", _ms::bytes>> = utc
     <<lat_deg::bytes-size(2), lat_min::bytes-size(2), ".", lat_sec::bytes-size(2), _lat_rest::bytes>> = lat

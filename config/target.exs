@@ -56,7 +56,7 @@ config :vintage_net,
         type: VintageNetEthernet,
         ipv4: %{
           method: :static, #:dhcp
-          address: "192.168.2.144",
+          address: "192.168.2.72",
           prefix_length: 24,
           gateway: "192.168.2.1",
           name_servers: ["1.1.1.1", "8.8.8.8", "8.8.4.4"]
